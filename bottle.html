@@ -1,0 +1,2519 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>咕嘎立瓶子 - sdnzxymnz</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      background: #eadfca;
+      color: #171511;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      overscroll-behavior: none;
+      background: #eadfca;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+    }
+
+    canvas {
+      display: block;
+      width: min(640px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)),
+        calc((100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * 4 / 3));
+      height: auto;
+      aspect-ratio: 4 / 3;
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+      background: #eadfca;
+      touch-action: none;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .start-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      padding: max(20px, env(safe-area-inset-top, 0px))
+        max(20px, env(safe-area-inset-right, 0px))
+        max(20px, env(safe-area-inset-bottom, 0px))
+        max(20px, env(safe-area-inset-left, 0px));
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.68);
+      touch-action: pan-y;
+    }
+
+    .start-overlay[hidden] {
+      display: none;
+    }
+
+    .start-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: min(560px, calc(100vw - 32px));
+      min-height: 300px;
+      padding: clamp(36px, 7vw, 52px) clamp(24px, 7vw, 44px) 24px;
+      border: 9px solid #4b2b18;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #cfe7a4, #a8cf78);
+      box-shadow: inset 0 0 0 3px rgba(255, 245, 200, 0.55),
+        0 16px 40px rgba(0, 0, 0, 0.5);
+      color: #382315;
+      text-align: center;
+      font-weight: 700;
+      max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 40px);
+      overflow-y: auto;
+    }
+
+    .start-card h1 {
+      margin: 0 0 32px;
+      font-size: clamp(34px, 8vw, 48px);
+      font-weight: 800;
+      line-height: 1.3;
+      text-shadow: 0 2px rgba(255, 255, 255, 0.65), 0 3px 0 rgba(68, 43, 22, 0.2);
+    }
+
+    .completion-message {
+      margin: -12px 0 26px;
+      color: #4b3826;
+      font-size: clamp(16px, 4vw, 20px);
+      font-weight: 700;
+    }
+
+    .start-author {
+      align-self: flex-end;
+      margin: auto 0 0;
+      padding-top: 22px;
+      color: #4b3826;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .start-button {
+      min-width: 200px;
+      min-height: 62px;
+      padding: 10px 24px;
+      border: 4px solid #3e2417;
+      border-radius: 9px;
+      background: #704323;
+      box-shadow: inset 0 2px rgba(255, 222, 169, 0.25), 0 4px #2a190f;
+      color: #fff1d2;
+      font: inherit;
+      font-size: 23px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .start-button:active {
+      transform: translateY(3px);
+      box-shadow: inset 0 2px rgba(255, 222, 169, 0.2), 0 1px #2a190f;
+    }
+
+    .perk-overlay {
+      background: rgba(0, 0, 0, 0.76);
+    }
+
+    .perk-card {
+      width: min(720px, calc(100vw - 32px));
+      padding: 28px clamp(18px, 4vw, 36px);
+      background: linear-gradient(180deg, #f2e7c7, #d5e7aa);
+      min-height: 0;
+    }
+
+    .perk-card h1 {
+      margin-bottom: 8px;
+      font-size: clamp(26px, 6vw, 38px);
+    }
+
+    .perk-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .perk-option {
+      min-height: 145px;
+      padding: 16px 12px;
+      border: 3px solid #694727;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff6d9, #e5c58d);
+      box-shadow: 0 5px #68411f;
+      color: #382315;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .perk-option:hover {
+      transform: translateY(-3px);
+      background: linear-gradient(180deg, #fffbe9, #f0d49e);
+    }
+
+    .perk-option strong,
+    .perk-option span {
+      display: block;
+    }
+
+    .perk-option strong {
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .perk-option span {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .perk-option img {
+      display: block;
+      width: 72px;
+      height: 56px;
+      margin: 0 auto 10px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .perk-icon {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 38px;
+      line-height: 1;
+    }
+
+    .meme-effect {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: block;
+      pointer-events: none;
+    }
+
+    .meme-effect[hidden] {
+      display: none;
+    }
+
+    .meme-effect--jige {
+      display: grid;
+      place-items: start center;
+      padding: var(--game-overlay-top, 120px) 16px 16px;
+    }
+
+    .meme-effect--xuebao {
+      display: grid;
+      place-items: start center;
+      padding: var(--game-overlay-top, 120px) 16px 16px;
+    }
+
+    .meme-effect--tuitui {
+      display: grid;
+      place-items: start center;
+      padding: var(--game-overlay-top, 120px) 16px 16px;
+    }
+
+    .meme-effect img {
+      display: block;
+      will-change: transform, opacity;
+      object-fit: contain;
+      filter: none;
+      opacity: 0.7;
+      animation: meme-pop-in 240ms ease-out both;
+    }
+
+    .meme-effect--jige img,
+    .meme-effect--tuitui img,
+    .meme-effect--xuebao img {
+      width: min(180px, 45vw);
+      max-height: 24vh;
+    }
+
+    .easter-egg {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-content: start center;
+      justify-items: center;
+      gap: 16px;
+      padding: var(--game-overlay-top, 120px) 24px 24px;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .easter-egg[hidden] {
+      display: none;
+    }
+
+    .easter-egg img {
+      display: block;
+      width: min(180px, 45vw);
+      max-width: 180px;
+      max-height: min(24vh, 180px);
+      will-change: transform, opacity;
+      object-fit: contain;
+      filter: none;
+    }
+
+    .easter-egg img[hidden] {
+      display: none;
+    }
+
+    .easter-egg p {
+      max-width: min(640px, 92vw);
+      margin: 0;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: rgba(26, 20, 12, 0.82);
+      color: #fff5b5;
+      font-size: clamp(24px, 5vw, 42px);
+      font-weight: 900;
+      line-height: 1.3;
+      text-shadow: 0 2px 5px #000;
+    }
+
+    .easter-egg--level30 img {
+      width: min(180px, 45vw);
+      max-width: 180px;
+      max-height: min(24vh, 180px);
+    }
+
+    .easter-egg--level30 {
+      place-content: center;
+      padding: max(24px, env(safe-area-inset-top, 0px))
+        max(24px, env(safe-area-inset-right, 0px))
+        max(24px, env(safe-area-inset-bottom, 0px))
+        max(24px, env(safe-area-inset-left, 0px));
+    }
+
+    .easter-egg--level30 p {
+      color: #ffe58a;
+      font-size: clamp(22px, 5vw, 40px);
+    }
+
+    .easter-egg--combo {
+      z-index: 99999;
+      place-content: center;
+      padding: max(24px, env(safe-area-inset-top, 0px))
+        max(24px, env(safe-area-inset-right, 0px))
+        max(24px, env(safe-area-inset-bottom, 0px))
+        max(24px, env(safe-area-inset-left, 0px));
+    }
+
+    .easter-egg--combo img {
+      width: min(180px, 45vw);
+      max-height: min(24vh, 180px);
+    }
+
+    .easter-egg--combo p {
+      color: #fff0a8;
+      font-size: clamp(26px, 6vw, 44px);
+    }
+
+    .easter-egg--level30.easter-egg--fading {
+      animation: level30-fade 500ms ease-out forwards;
+    }
+
+    @keyframes level30-fade {
+      to { opacity: 0; }
+    }
+
+    @keyframes meme-pop-in {
+      from {
+        opacity: 0;
+        transform: scale(0.82) translateY(8px);
+      }
+
+      to {
+        opacity: 0.7;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .rewind-button {
+      position: fixed;
+      z-index: 10001;
+      left: 50%;
+      transform: translateX(-50%);
+      min-height: 42px;
+      padding: 8px 20px;
+      border: 3px solid #3e2417;
+      border-radius: 8px;
+      background: #704323;
+      color: #fff1d2;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .rewind-button[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 560px) {
+      .start-card {
+        padding: 24px 18px;
+      }
+
+      .perk-card {
+        width: min(440px, calc(100vw - 32px));
+        padding: 18px;
+      }
+
+      .perk-options {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .perk-option {
+        min-height: 90px;
+        padding: 10px;
+      }
+
+      .perk-option img {
+        width: 54px;
+        height: 40px;
+        margin-bottom: 6px;
+      }
+
+      .perk-option strong {
+        margin-bottom: 4px;
+      }
+
+      .perk-option span {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-height: 560px) {
+      .start-card {
+        min-height: 0;
+      }
+
+      .perk-card h1 {
+        margin: 0 0 4px;
+      }
+
+      .completion-message {
+        margin: 0 0 10px;
+      }
+
+      .perk-options {
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="640" height="480" aria-label="立瓶子小游戏，按住画布蓄力并松开抛出"></canvas>
+  <div id="start-overlay" class="start-overlay" role="dialog" aria-modal="true" aria-labelledby="start-title">
+    <section class="start-card">
+      <h1 id="start-title">咕嘎立瓶子</h1>
+      <button id="start-button" class="start-button" type="button">开始摸鱼</button>
+      <p id="start-author" class="start-author">作者：sdnzxymnz</p>
+    </section>
+  </div>
+  <div id="completion-overlay" class="start-overlay" role="dialog" aria-modal="true" aria-labelledby="completion-title" hidden>
+    <section class="start-card">
+      <h1 id="completion-title">游戏结束</h1>
+      <p id="completion-message" class="completion-message"></p>
+      <p id="record-message" class="completion-message" hidden>新纪录！</p>
+      <button id="completion-restart" class="start-button" type="button">再来一次</button>
+    </section>
+  </div>
+  <div id="perk-overlay" class="start-overlay perk-overlay" role="dialog" aria-modal="true"
+    aria-labelledby="perk-title" hidden>
+    <section class="start-card perk-card">
+      <h1 id="perk-title">随机三选一</h1>
+      <p class="completion-message">选好后继续挑战下一关</p>
+      <div id="perk-options" class="perk-options"></div>
+    </section>
+  </div>
+  <div id="meme-effect" class="meme-effect" aria-hidden="true" hidden>
+    <img id="meme-effect-image" decoding="async" alt="">
+  </div>
+  <div id="easter-egg" class="easter-egg" aria-live="polite" hidden>
+    <img id="easter-egg-image" decoding="async" alt="">
+    <p id="easter-egg-message"></p>
+  </div>
+  <button id="rewind-button" class="rewind-button" type="button" hidden>↶ 撤回重来</button>
+
+  <script>
+    const AUTHOR_CREDIT = "作者：sdnzxymnz";
+    const PAGE_TITLE = "咕嘎立瓶子 - sdnzxymnz";
+    const authorCredit = document.getElementById("start-author");
+    window.setInterval(() => {
+      if (authorCredit.textContent !== AUTHOR_CREDIT) {
+        authorCredit.textContent = AUTHOR_CREDIT;
+      }
+      if (document.title !== PAGE_TITLE) {
+        document.title = PAGE_TITLE;
+      }
+    }, 250);
+
+    const tuituiAudio = new Audio("tuitui3.mp3");
+    const jigeAudio = new Audio("jige3.mp3");
+    const xuebaoAudio = new Audio("xuebao3.mp3");
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const startOverlay = document.getElementById("start-overlay");
+    const startButton = document.getElementById("start-button");
+    const completionOverlay = document.getElementById("completion-overlay");
+    const completionRestart = document.getElementById("completion-restart");
+    const completionMessage = document.getElementById("completion-message");
+    const recordMessage = document.getElementById("record-message");
+    const perkOverlay = document.getElementById("perk-overlay");
+    const perkOptions = document.getElementById("perk-options");
+    const memeEffect = document.getElementById("meme-effect");
+    const memeEffectImage = document.getElementById("meme-effect-image");
+    const easterEgg = document.getElementById("easter-egg");
+    const easterEggImage = document.getElementById("easter-egg-image");
+    const easterEggMessage = document.getElementById("easter-egg-message");
+    const rewindButton = document.getElementById("rewind-button");
+    let gameStarted = false;
+    startButton.addEventListener("click", () => {
+      unlockMemeAudio(jigeAudio);
+      unlockMemeAudio(tuituiAudio);
+      enableAudioFromPointerDown();
+      comboCount = 0;
+      gameStarted = true;
+      startOverlay.hidden = true;
+    });
+    const WIDTH = 640;
+    const HEIGHT = 480;
+    const TABLE = { x: 120, y: 400, width: 500, height: 20 };
+    const groundY = TABLE.y;
+    const startX = 150;
+    const LANDING_ZONE_WIDTH = 80;
+    const BOTTLE = { width: 32, height: 96 };
+    const BOTTLE_IMAGE_HEIGHT = 120;
+    const HAND_IMAGE_WIDTH = 150;
+    const HAND_REACH_DURATION = 0.16;
+    const SETTLING_DURATION = 0.1;
+    const MIN_CHARGE_HOLD_SECONDS = 0.2;
+    let bottleImages = Array(8).fill(null);
+    let currentBottleImage = null;
+    let handImage = null;
+    let imagesReady = false;
+    const UPRIGHT_TOLERANCE = Math.PI / 12;
+    const LANDING_ANGLE_EPSILON = Math.PI / 360;
+    const LANDING_CONTACT_EPSILON = 1;
+    const LEVELS = [
+      {
+        name: "哇哈哈", color: "#df8b8b", water: 0.1, gravity: 1080,
+        targetX: 320, chargeDuration: 2.0, horizontalSpeedMultiplier: 1,
+        spinSpeedMultiplier: 1
+      },
+      {
+        name: "农夫山泉", color: "#d84c4c", water: 0.3, gravity: 1200,
+        targetX: 450, chargeDuration: 3.0, horizontalSpeedMultiplier: 1.1,
+        spinSpeedMultiplier: 0.62
+      },
+      {
+        name: "百岁山", color: "#5d91d5", water: 0.5, gravity: 1320,
+        targetX: 550, chargeDuration: 4.0, horizontalSpeedMultiplier: 1.67,
+        spinSpeedMultiplier: 0.6
+      },
+      {
+        name: "冰红茶", color: "#8a4a24", gravity: 1500,
+        targetX: 580, chargeDuration: 4.4, horizontalSpeedMultiplier: 1.8,
+        verticalSpeed: -600, spinSpeedMultiplier: 0.63
+      },
+      {
+        name: "国窖冰红茶", color: "#5b3528", gravity: 1700,
+        targetX: 600, chargeDuration: 4.8, horizontalSpeedMultiplier: 2.0,
+        verticalSpeed: -650, spinSpeedMultiplier: 0.66
+      },
+      {
+        name: "二八大杠自行车", color: "#304f59", gravity: 2000,
+        targetX: 620, chargeDuration: 5.2, horizontalSpeedMultiplier: 2.3,
+        verticalSpeed: -700, spinSpeedMultiplier: 0.724,
+        uprightToleranceBonus: 40
+      },
+      {
+            name: "九号电动车", color: "#58616a", gravity: 2000,
+      targetX: 620, chargeDuration: 5.2, horizontalSpeedMultiplier: 2.3,
+      verticalSpeed: -750, spinSpeedMultiplier: 0.724,
+      uprightToleranceBonus: 40,
+      
+      },
+      {
+        name: "特斯拉汽车", color: "#363b42", gravity: 3000,
+        targetX: 620, chargeDuration: 6.0, horizontalSpeedMultiplier: 2.9,
+        verticalSpeed: -850, spinSpeedMultiplier: 0.896,
+        autoPark: true
+      }
+    ];
+    const AFFIXES = [
+      { id: "storm", name: "狂风骤雨" },
+      { id: "heavy", name: "超重特斯拉" },
+      { id: "blur", name: "视力模糊" },
+      { id: "ice", name: "滑冰桌面" }
+    ];
+    const ENDLESS_TARGET_MIN_X = 350;
+    const ENDLESS_TARGET_MAX_X = 550;
+    const SLIDE_DURATION = 0.48;
+    const SLIDE_DISTANCE_MIN = 90;
+    const SLIDE_DISTANCE_MAX = 130;
+    let configuredLevelIndex = -1;
+    let currentLevel = LEVELS[0];
+    let currentAffix = null;
+    let visualClouds = [];
+    const PERKS = [
+      {
+        id: "magnet",
+        name: "玄学磁铁",
+        description: "星星触发提示持续时间翻倍",
+        icon: "🧲"
+      },
+      {
+        id: "bounce",
+        name: "精准反弹",
+        description: "砸中桌面但没落进绿区时，可额外弹起一次",
+        icon: "🏀"
+      },
+      {
+        id: "rewind",
+        name: "时间回溯",
+        description: "抛出后可撤回，瓶子瞬间回到起点",
+        icon: "⏪"
+      },
+      {
+        id: "defense",
+        name: "绝对防御",
+        description: "吃到绿星时额外触发金色闪光与屏幕震动",
+        icon: "🛡️"
+      },
+      {
+        id: "jige",
+        name: "鸡你太美",
+        description: "抛出时弹出热梗特效并播放音效，得分 +100",
+        image: "jige.gif"
+      },
+      {
+        id: "tuitui",
+        name: "退退退",
+        description: "落点偏离绿区不超过 40 像素时强行拉回",
+        image: "tuitui.gif"
+      },
+      {
+        id: "xuebao",
+        name: "雪豹闭嘴",
+        description: "飞到最高点弹出热梗特效，成功后本关得分翻倍",
+        image: "xuebao.gif",
+        audio: "xuebao3.mp3"
+      }
+    ];
+    let cameraX = 0;
+    let cameraTargetX = 0;
+    let windForce = Math.round(Math.random() * 120 - 60);
+    let star = null;
+    let gravityLockThisThrow = false;
+    let scoreFrenzyThisThrow = false;
+    let pickupMessage = "";
+    let pickupMessageRemaining = 0;
+    let goldenFlashRemaining = 0;
+    let screenShakeRemaining = 0;
+    let crow = null;
+    let lightningRemaining = 0;
+    let apexInterferenceTriggered = false;
+    let bounceUsed = false;
+    let tuituiUsed = false;
+    let throwScoreBonusAwarded = false;
+    const acquiredPerks = {
+      magnet: false, bounce: false, rewind: false, defense: false,
+      jige: false, tuitui: false, xuebao: false
+    };
+    let memeEffectTimeout = 0;
+    let memeEffectAudio = null;
+    let comboCount = 0;
+    let comboEasterEggActive = false;
+    let level30EasterEggShown = false;
+    let easterEggQueue = [];
+    let easterEggTimeout = 0;
+    tuituiAudio.preload = "auto";
+    tuituiAudio.volume = 1;
+    jigeAudio.preload = "auto";
+    jigeAudio.volume = 1;
+    xuebaoAudio.preload = "auto";
+    xuebaoAudio.volume = 1;
+    tuituiAudio.load();
+    jigeAudio.load();
+    xuebaoAudio.load();
+    tuituiAudio.addEventListener("error", () => {
+      logAudioError("退退退音频资源错误:", tuituiAudio, tuituiAudio.error);
+    });
+    jigeAudio.addEventListener("error", () => {
+      logAudioError("鸡你太美音频资源错误:", jigeAudio, jigeAudio.error);
+    });
+    xuebaoAudio.addEventListener("error", () => {
+      logAudioError("雪豹闭嘴音频资源错误:", xuebaoAudio, xuebaoAudio.error);
+    });
+    const HIGH_SCORE_KEY = "bottle-game-high-score";
+    let score = 0;
+    let highScore = loadHighScore();
+    let starCollectedThisThrow = false;
+    let scoreBreaksRecord = false;
+    const RANKS = [
+      { minimumScore: 0, name: "纯纯牛马", color: "#c6c6c6" },
+      { minimumScore: 300, name: "初级摸鱼", color: "#80c7ff" },
+      { minimumScore: 1000, name: "带薪拉屎", color: "#79dc9a" },
+      { minimumScore: 2000, name: "茶水间战神", color: "#e0b4ff" },
+      { minimumScore: 4000, name: "工位仙人", color: "#ffd45c" },
+      { minimumScore: 8000, name: "资本家克星", color: "#ff9d55" },
+      { minimumScore: 15000, name: "赛博街溜子", color: "#ff6c88" }
+    ];
+
+    function loadHighScore() {
+      try {
+        return Math.max(0, Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0);
+      } catch (error) {
+        console.warn("Unable to load the saved high score.", error);
+        return 0;
+      }
+    }
+
+    function saveHighScoreIfNeeded() {
+      if (score <= highScore) return;
+      highScore = score;
+      scoreBreaksRecord = true;
+      try {
+        localStorage.setItem(HIGH_SCORE_KEY, String(highScore));
+      } catch (error) {
+        console.warn("Unable to save the high score.", error);
+      }
+    }
+
+    function getRankIndex(currentScore = score) {
+      for (let index = RANKS.length - 1; index >= 0; index--) {
+        if (currentScore >= RANKS[index].minimumScore) return index;
+      }
+      return 0;
+    }
+
+    function addScore(points) {
+      const previousRankIndex = getRankIndex();
+      score += points;
+      saveHighScoreIfNeeded();
+      const newRankIndex = getRankIndex();
+      if (newRankIndex > previousRankIndex) {
+        announceRankUp(newRankIndex);
+      }
+    }
+
+    function logAudioError(label, audio, error) {
+      console.log(label, "code:", error?.code ?? audio.error?.code,
+        "message:", error?.message ?? audio.error?.message);
+    }
+
+    function unlockMemeAudio(audio) {
+      try {
+        audio.currentTime = 0;
+        const playback = audio.play();
+        playback?.then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        }).catch((error) => {
+          logAudioError("音频解锁失败:", audio, error);
+        });
+      } catch (error) {
+        logAudioError("音频解锁失败:", audio, error);
+      }
+    }
+
+    function playAudioFromStart(audio, label) {
+      try {
+        audio.currentTime = 0;
+        audio.volume = 1;
+        const playback = audio.play();
+        playback?.catch((error) => {
+          logAudioError(label, audio, error);
+        });
+      } catch (error) {
+        logAudioError(label, audio, error);
+      }
+    }
+
+    function positionGameOverlays() {
+      const canvasBounds = canvas.getBoundingClientRect();
+      const top = Math.max(
+        window.visualViewport?.offsetTop || 0,
+        canvasBounds.top + canvasBounds.height * 0.25
+      );
+      document.documentElement.style.setProperty("--game-overlay-top", `${top}px`);
+    }
+
+    function showMemeEffect(perkId) {
+      if (comboEasterEggActive) return;
+      const perk = PERKS.find((item) => item.id === perkId);
+      if (!perk || !perk.image) return;
+      positionGameOverlays();
+      window.clearTimeout(memeEffectTimeout);
+      if (memeEffectAudio) {
+        memeEffectAudio.pause();
+        memeEffectAudio.currentTime = 0;
+      }
+      memeEffect.className = `meme-effect meme-effect--${perkId}`;
+      memeEffectImage.src = perk.image;
+      memeEffectImage.alt = perk.name;
+      memeEffect.hidden = false;
+      if (perkId !== "tuitui" && perkId !== "jige") {
+        memeEffectAudio = perkId === "xuebao"
+          ? xuebaoAudio
+          : new Audio(perk.audio || `${perkId}.mp3`);
+        playAudioFromStart(memeEffectAudio, `${perk.name}音频播放失败:`);
+      }
+      memeEffectTimeout = window.setTimeout(() => {
+        memeEffect.hidden = true;
+        memeEffectImage.removeAttribute("src");
+        if (memeEffectAudio) {
+          memeEffectAudio.pause();
+          memeEffectAudio.currentTime = 0;
+          memeEffectAudio = null;
+        }
+        memeEffectTimeout = 0;
+      }, 2000);
+    }
+
+    function clearMemeEffect() {
+      window.clearTimeout(memeEffectTimeout);
+      memeEffectTimeout = 0;
+      memeEffect.hidden = true;
+      memeEffectImage.removeAttribute("src");
+      if (memeEffectAudio) {
+        memeEffectAudio.pause();
+        memeEffectAudio.currentTime = 0;
+        memeEffectAudio = null;
+      }
+      tuituiAudio.pause();
+      tuituiAudio.currentTime = 0;
+      jigeAudio.pause();
+      jigeAudio.currentTime = 0;
+    }
+
+    function configureCurrentLevel() {
+      if (configuredLevelIndex === levelIndex) return;
+      configuredLevelIndex = levelIndex;
+      const isEndless = levelIndex >= LEVELS.length;
+      const endlessRound = levelIndex - LEVELS.length + 1;
+      const endlessSpeedBonus = Math.min(0.15, Math.max(0, endlessRound - 1) * 0.025);
+      const baseLevel = isEndless
+        ? {
+          ...LEVELS[LEVELS.length - 1],
+          name: "特斯拉大军",
+          horizontalSpeedMultiplier:
+            LEVELS[LEVELS.length - 1].horizontalSpeedMultiplier + endlessSpeedBonus,
+          spinSpeedMultiplier: 1.2
+        }
+        : LEVELS[levelIndex];
+      const targetMinX = endlessRound === 1 ? 460 : ENDLESS_TARGET_MIN_X;
+      const targetMaxX = endlessRound === 1 ? 520 : ENDLESS_TARGET_MAX_X;
+      const targetX = isEndless
+        ? Math.round(targetMinX + Math.random() * (targetMaxX - targetMinX))
+        : baseLevel.targetX;
+      currentAffix = isEndless && endlessRound % 3 === 0
+        ? AFFIXES[Math.floor(Math.random() * AFFIXES.length)]
+        : null;
+      const landingZoneWidth = currentAffix?.id === "heavy"
+        ? LANDING_ZONE_WIDTH * 1.2
+        : LANDING_ZONE_WIDTH;
+      currentLevel = {
+        ...baseLevel,
+        targetX,
+        ...(currentAffix?.id === "heavy" ? { gravity: baseLevel.gravity * 1.25 } : {})
+      };
+      TABLE.width = isEndless
+        ? targetX - TABLE.x + landingZoneWidth / 2 +
+          SLIDE_DISTANCE_MAX + 10
+        : 500;
+      visualClouds = currentAffix?.id === "blur"
+        ? Array.from({ length: 4 }, () => ({
+          x: Math.random() * WIDTH,
+          y: 125 + Math.random() * 250,
+          size: 38 + Math.random() * 36,
+          speed: 22 + Math.random() * 38
+        }))
+        : [];
+    }
+
+    function getCurrentLevel() {
+      configureCurrentLevel();
+      return currentLevel;
+    }
+
+    function selectReachableEndlessTarget() {
+      if (levelIndex < LEVELS.length) return;
+      // 自适应兜底（必须早于下面的可达性模拟）：水平速度过大时，
+      // 最小蓄力也会直接飞过目标区（物理死局），先强行压低速度倍率，
+      // 这样模拟选出的目标点在真实物理下才真的能落到。
+      currentLevel.horizontalSpeedMultiplier = Math.min(currentLevel.horizontalSpeedMultiplier, 1.8);
+      const endlessRound = levelIndex - LEVELS.length + 1;
+      const preferredMinX = endlessRound === 1 ? 460 : ENDLESS_TARGET_MIN_X;
+      const preferredMaxX = endlessRound === 1 ? 520 : ENDLESS_TARGET_MAX_X;
+      const step = 1 / 120;
+      const chargeSteps = 500;
+      const landingZoneWidth = currentAffix?.id === "heavy"
+        ? LANDING_ZONE_WIDTH * 1.2
+        : LANDING_ZONE_WIDTH;
+      const targetCandidates = [];
+      for (let targetX = 300; targetX <= 620; targetX += 5) {
+        targetCandidates.push(targetX);
+      }
+      const useAutoPark = currentLevel.autoPark && !acquiredPerks.tuitui;
+      const targetReach = landingZoneWidth / 2 + (useAutoPark ? 50 : 0);
+      let selectedTargets = [];
+
+      for (let tolerance = 45; tolerance <= 135 && selectedTargets.length === 0; tolerance += 15) {
+        for (let spinStep = 8; spinStep <= 12 && selectedTargets.length === 0; spinStep += 1) {
+          const spinMultiplier = spinStep / 10;
+          currentLevel.spinSpeedMultiplier = spinMultiplier;
+          // 强行锁死无尽模式转速：不管多少关，转速都不再增长
+          currentLevel.spinSpeedMultiplier = Math.min(currentLevel.spinSpeedMultiplier, 1.2);
+          currentLevel.uprightToleranceBonus = tolerance - 25;
+          const landingOutcomes = [];
+
+          for (let chargeStep = 0; chargeStep <= chargeSteps; chargeStep++) {
+            const strength = chargeStep / chargeSteps;
+            let x = startX;
+            let y = groundY - BOTTLE.height / 2;
+            let vx = (180 + strength * 120) * currentLevel.horizontalSpeedMultiplier;
+            let vy = currentLevel.verticalSpeed || -550;
+            let angle = 0;
+            const angularVelocity = ((Math.PI * 2) + (strength * Math.PI * 2)) *
+              spinMultiplier * (currentLevel.spinMultiplierBonus || 1);
+
+            for (let frame = 0; frame < 180; frame++) {
+              const previousY = y;
+              const previousAngle = angle;
+              vx *= Math.exp(-0.04 * step);
+              vx += windForce * step;
+              vy += currentLevel.gravity * step;
+              vy *= Math.exp(-0.015 * step);
+              x += vx * step;
+              y += vy * step;
+              angle += angularVelocity * step;
+              if (vy <= 0) continue;
+
+              const corners = [
+                [-BOTTLE.width / 2, -BOTTLE.height / 2],
+                [BOTTLE.width / 2, -BOTTLE.height / 2],
+                [BOTTLE.width / 2, BOTTLE.height / 2],
+                [-BOTTLE.width / 2, BOTTLE.height / 2]
+              ].map(([localX, localY]) => ({
+                x: x + localX * Math.cos(angle) - localY * Math.sin(angle),
+                y: y + localX * Math.sin(angle) + localY * Math.cos(angle)
+              }));
+              const intersections = [];
+
+              for (let index = 0; index < corners.length; index++) {
+                const start = corners[index];
+                const end = corners[(index + 1) % corners.length];
+                const deltaY = end.y - start.y;
+                if (Math.abs(deltaY) <= LANDING_CONTACT_EPSILON) {
+                  if (Math.abs(start.y - TABLE.y) <= LANDING_CONTACT_EPSILON) {
+                    intersections.push(start.x, end.x);
+                  }
+                  continue;
+                }
+                const t = (TABLE.y - start.y) / deltaY;
+                if (t >= 0 && t <= 1) {
+                  intersections.push(start.x + (end.x - start.x) * t);
+                }
+              }
+
+              const previousBaseY = previousY +
+                Math.cos(previousAngle) * (BOTTLE.height / 2) +
+                Math.abs(Math.sin(previousAngle)) * (BOTTLE.width / 2);
+              const baseCenterX = x - Math.sin(angle) * (BOTTLE.height / 2);
+              const currentBaseY = y + Math.cos(angle) * (BOTTLE.height / 2) +
+                Math.abs(Math.sin(angle)) * (BOTTLE.width / 2);
+              const baseHalfWidthX = Math.abs(Math.cos(angle)) * (BOTTLE.width / 2);
+              const angleDegrees = ((angle * 180 / Math.PI) % 360 + 360) % 360;
+              const angleErrorDegrees = Math.min(angleDegrees, 360 - angleDegrees);
+              landingOutcomes.push({
+                baseCenterX,
+                baseHalfWidthX,
+                previousBaseY,
+                currentBaseY,
+                angleErrorDegrees,
+                intersections
+              });
+              break;
+            }
+          }
+
+          const targetCounts = new Map(targetCandidates.map((targetX) => [targetX, 0]));
+          for (const outcome of landingOutcomes) {
+            if (outcome.angleErrorDegrees > tolerance) continue;
+            for (const targetX of targetCandidates) {
+              if (Math.abs(outcome.baseCenterX - targetX) >= targetReach) continue;
+              const tableRight = targetX + landingZoneWidth / 2 +
+                SLIDE_DISTANCE_MAX + 10;
+              const touchedTable = (outcome.intersections.length > 0 &&
+                Math.max(...outcome.intersections) >= TABLE.x - LANDING_CONTACT_EPSILON &&
+                Math.min(...outcome.intersections) <= tableRight + LANDING_CONTACT_EPSILON) ||
+                (outcome.previousBaseY <= TABLE.y + LANDING_CONTACT_EPSILON &&
+                  outcome.currentBaseY >= TABLE.y - LANDING_CONTACT_EPSILON &&
+                  outcome.baseCenterX + outcome.baseHalfWidthX >=
+                    TABLE.x - LANDING_CONTACT_EPSILON &&
+                  outcome.baseCenterX - outcome.baseHalfWidthX <=
+                    tableRight + LANDING_CONTACT_EPSILON);
+              if (touchedTable) targetCounts.set(targetX, targetCounts.get(targetX) + 1);
+            }
+          }
+
+          const viableTargets = [...targetCounts.entries()]
+            .filter(([, count]) => count >= 30);
+          if (viableTargets.length === 0) continue;
+          const preferredTargets = viableTargets.filter(([targetX]) =>
+            targetX >= preferredMinX && targetX <= preferredMaxX
+          );
+          const candidates = preferredTargets.length > 0 ? preferredTargets : viableTargets;
+          const targetCountsSorted = candidates.map(([, count]) => count).sort((a, b) => a - b);
+          const moderateCount = targetCountsSorted[Math.floor(targetCountsSorted.length / 2)];
+          selectedTargets = candidates
+            .filter(([, count]) => Math.abs(count - moderateCount) <= 10)
+            .map(([targetX]) => targetX);
+        }
+      }
+
+      if (selectedTargets.length === 0) {
+        console.error(`Unable to find a reachable target for endless round ${endlessRound}.`);
+        return;
+      }
+
+      currentLevel.targetX = selectedTargets[Math.floor(Math.random() * selectedTargets.length)];
+      // 兜底逻辑：限制最高速度防止飞过头，限制最远距离防止够不到
+      currentLevel.horizontalSpeedMultiplier = Math.min(currentLevel.horizontalSpeedMultiplier, 1.8);
+      // 强制限制最小距离，防止目标太近导致轻微蓄力就飞过头 / 无法微调力度
+      if (currentLevel.targetX < 300) {
+        currentLevel.targetX = 300;
+      }
+      // 如果满蓄力都够不到，就把目标强行拉近
+      if (currentLevel.targetX > 550) {
+        currentLevel.targetX = 550; // 550 是人类满蓄力绝对能轻松够到的距离
+      }
+      TABLE.width = currentLevel.targetX - TABLE.x + landingZoneWidth / 2 +
+        SLIDE_DISTANCE_MAX + 10;
+    }
+
+    function getLandingZone() {
+      const width = currentAffix?.id === "heavy"
+        ? LANDING_ZONE_WIDTH * 1.2
+        : LANDING_ZONE_WIDTH;
+      return {
+        x: getCurrentLevel().targetX - width / 2,
+        width
+      };
+    }
+
+    const bottle = {
+      x: startX,
+      y: groundY - BOTTLE.height / 2,
+      vx: 0,
+      vy: 0,
+      angle: Math.PI / 2,
+      angularVelocity: 0
+    };
+    let levelIndex = 0;
+    let phase = "ready";
+    let charge = 0;
+    let chargeStartTime = 0;
+    let resultTimer = 0;
+    let resultSuccess = false;
+    let handReachTime = 0;
+    let settlingStartAngle = 0;
+    let settlingElapsed = 0;
+    let slideElapsed = 0;
+    let slideStartX = 0;
+    let slideDistance = 0;
+    let lastTime = 0;
+    let audioContext = null;
+    let whooshNoiseBuffer = null;
+    let chargeOscillator = null;
+    let chargeGain = null;
+    let chargeSoundActive = false;
+
+    function startChargeSound() {
+      if (!audioContext || chargeOscillator) return;
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+        oscillator.type = "sawtooth";
+        oscillator.frequency.value = 150;
+        oscillator.frequency.setValueAtTime(150, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.1, now + 0.04);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        chargeOscillator = oscillator;
+        chargeGain = gain;
+        chargeSoundActive = true;
+      } catch (error) {
+        console.warn("Unable to start charge audio.", error);
+        stopChargeSound();
+      }
+    }
+
+    function updateChargeSound(chargeProgress) {
+      if (!audioContext || !chargeOscillator || !chargeSoundActive) return;
+      const now = audioContext.currentTime;
+      const frequency = 150 + Math.max(0, Math.min(1, chargeProgress)) * 250;
+      chargeOscillator.frequency.cancelScheduledValues(now);
+      chargeOscillator.frequency.setTargetAtTime(frequency, now, 0.025);
+    }
+
+    function stopChargeSound() {
+      if (!chargeOscillator || !audioContext) return;
+      const oscillator = chargeOscillator;
+      const gain = chargeGain;
+      chargeSoundActive = false;
+      chargeOscillator = null;
+      chargeGain = null;
+      try {
+        const now = audioContext.currentTime;
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setTargetAtTime(0.0001, now, 0.012);
+        oscillator.stop(now + 0.06);
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+      } catch (error) {
+        console.warn("Unable to stop charge audio cleanly.", error);
+      }
+    }
+
+    function playThrowWhoosh() {
+      if (!audioContext || !whooshNoiseBuffer) return;
+      try {
+        const now = audioContext.currentTime;
+        const source = audioContext.createBufferSource();
+        const filter = audioContext.createBiquadFilter();
+        const gain = audioContext.createGain();
+        source.buffer = whooshNoiseBuffer;
+        filter.type = "bandpass";
+        filter.Q.setValueAtTime(0.8, now);
+        filter.frequency.setValueAtTime(2000, now);
+        filter.frequency.exponentialRampToValueAtTime(200, now + 0.2);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.65, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioContext.destination);
+        source.start(now);
+        source.stop(now + 0.21);
+        source.onended = () => {
+          source.disconnect();
+          filter.disconnect();
+          gain.disconnect();
+        };
+      } catch (error) {
+        console.warn("Unable to play throw whoosh.", error);
+      }
+    }
+
+    function playSuccessCandySound() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for landing success.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      [
+        { start: 0, from: 523.25, to: 659.25 },
+        { start: 0.075, from: 1046.5, to: 1318.51 }
+      ].forEach((note) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const noteStart = startTime + note.start;
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(note.from, noteStart);
+        oscillator.frequency.exponentialRampToValueAtTime(note.to, noteStart + 0.12);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.5, noteStart + 0.003);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.125);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + 0.13);
+      });
+    }
+
+    function playFailureSound() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for landing failure.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sawtooth";
+      oscillator.frequency.setValueAtTime(300, startTime);
+      oscillator.frequency.exponentialRampToValueAtTime(100, startTime + 0.3);
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.8, startTime + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.3);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.3);
+    }
+
+    function playGameOverSound() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for game over.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      const notes = [
+        { frequency: 392, start: 0 },
+        { frequency: 311.13, start: 0.3 },
+        { frequency: 261.63, start: 0.6 }
+      ];
+      for (const note of notes) {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const noteStart = startTime + note.start;
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(note.frequency, noteStart);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.32, noteStart + 0.025);
+        gain.gain.setValueAtTime(0.32, noteStart + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.3);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + 0.3);
+      }
+    }
+
+    function playComboEasterEggSound() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for Easter egg.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, startTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.65);
+
+      oscillator.type = "sawtooth";
+      oscillator.frequency.setValueAtTime(520, startTime);
+      oscillator.frequency.exponentialRampToValueAtTime(190, startTime + 0.35);
+      oscillator.frequency.setValueAtTime(640, startTime + 0.38);
+      oscillator.frequency.exponentialRampToValueAtTime(260, startTime + 0.62);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.65);
+    }
+
+    function playRankUpChord() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for rank-up.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      [523.25, 659.25, 783.99].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const noteStart = startTime + index * 0.12;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, noteStart);
+        oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.25, noteStart + 0.24);
+        gain.gain.setValueAtTime(0.0001, noteStart);
+        gain.gain.exponentialRampToValueAtTime(0.12, noteStart + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.42);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(noteStart);
+        oscillator.stop(noteStart + 0.42);
+      });
+    }
+
+    function playLevel30UnlockSound() {
+      if (!audioContext) return;
+      if (audioContext.state === "suspended") {
+        audioContext.resume().catch((error) => {
+          console.warn("Unable to resume audio for level 30 unlock.", error);
+        });
+      }
+
+      const startTime = audioContext.currentTime;
+      const notes = [
+        { time: 0, frequencies: [392, 523.25] },
+        { time: 0.28, frequencies: [493.88, 659.25] },
+        { time: 0.56, frequencies: [587.33, 783.99] },
+        { time: 0.84, frequencies: [783.99, 987.77, 1174.66] }
+      ];
+      for (const note of notes) {
+        for (const frequency of note.frequencies) {
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          const noteStart = startTime + note.time;
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(frequency, noteStart);
+          oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.01, noteStart + 0.48);
+          gain.gain.setValueAtTime(0.0001, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.055, noteStart + 0.035);
+          gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.72);
+          oscillator.connect(gain);
+          gain.connect(audioContext.destination);
+          oscillator.start(noteStart);
+          oscillator.stop(noteStart + 0.72);
+        }
+      }
+    }
+
+    function triggerLevel30EasterEgg() {
+      if (level30EasterEggShown) return;
+      level30EasterEggShown = true;
+      clearEasterEggs();
+      goldenFlashRemaining = 0.3;
+      playLevel30UnlockSound();
+      queueEasterEgg({
+        image: "sdny.png",
+        message: "恭喜你解锁了：山东女子学院某男子（作者本人）！",
+        duration: 3500,
+        variant: "level30"
+      });
+    }
+
+    function announceRankUp(rankIndex) {
+      const rank = RANKS[rankIndex];
+      queueEasterEgg({
+        message: `恭喜晋级：${rank.name}！`,
+        duration: 2200,
+        color: rank.color
+      });
+      if (rankIndex >= 4) {
+        goldenFlashRemaining = 0.3;
+        playRankUpChord();
+      }
+    }
+
+    function showNextEasterEgg() {
+      const nextEgg = easterEggQueue.shift();
+      if (!nextEgg) {
+        easterEgg.hidden = true;
+        easterEggTimeout = 0;
+        return;
+      }
+
+      positionGameOverlays();
+      easterEggMessage.textContent = nextEgg.message;
+      easterEggMessage.style.color = nextEgg.color || "";
+      easterEgg.className = `easter-egg${nextEgg.variant ? ` easter-egg--${nextEgg.variant}` : ""}`;
+      easterEggImage.hidden = !nextEgg.image;
+      easterEggImage.onerror = () => {
+        easterEggImage.hidden = true;
+        easterEggImage.removeAttribute("src");
+      };
+      if (nextEgg.image) easterEggImage.src = nextEgg.image;
+      else easterEggImage.removeAttribute("src");
+      easterEgg.hidden = false;
+      easterEggTimeout = window.setTimeout(() => {
+        if (nextEgg.variant === "level30") {
+          easterEgg.classList.add("easter-egg--fading");
+          easterEggTimeout = window.setTimeout(() => {
+            easterEgg.hidden = true;
+            easterEggImage.hidden = true;
+            easterEggImage.removeAttribute("src");
+            easterEgg.className = "easter-egg";
+            showNextEasterEgg();
+          }, 500);
+          return;
+        }
+        if (nextEgg.variant === "combo") comboEasterEggActive = false;
+        easterEgg.hidden = true;
+        easterEggImage.hidden = true;
+        easterEggImage.removeAttribute("src");
+        easterEgg.className = "easter-egg";
+        showNextEasterEgg();
+      }, nextEgg.duration);
+    }
+
+    function queueEasterEgg(egg) {
+      if (comboEasterEggActive && egg.variant !== "combo") return;
+      easterEggQueue.push(egg);
+      if (easterEgg.hidden) showNextEasterEgg();
+    }
+
+    function clearEasterEggs() {
+      window.clearTimeout(easterEggTimeout);
+      easterEggTimeout = 0;
+      easterEggQueue = [];
+      comboEasterEggActive = false;
+      easterEgg.hidden = true;
+      easterEggImage.hidden = true;
+      easterEggImage.removeAttribute("src");
+      easterEgg.className = "easter-egg";
+      easterEggMessage.textContent = "";
+    }
+
+    window.addEventListener("resize", positionGameOverlays);
+    window.visualViewport?.addEventListener("resize", positionGameOverlays);
+
+    function triggerHighComboEgg() {
+      const message = "这就是高玩的实力吗？";
+      clearMemeEffect();
+      jigeAudio.pause();
+      jigeAudio.currentTime = 0;
+      clearEasterEggs();
+      comboEasterEggActive = true;
+      pickupMessage = "";
+      pickupMessageRemaining = 0;
+      console.log(message);
+      playComboEasterEggSound();
+      queueEasterEgg({
+        image: "yaoshui.gif",
+        message,
+        duration: 2500,
+        variant: "combo"
+      });
+    }
+
+    function enableAudioFromPointerDown() {
+      if (audioContext) {
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch((error) => {
+            console.warn("Unable to resume game audio.", error);
+          });
+        }
+        return;
+      }
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      try {
+        audioContext = new AudioContextClass();
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch(() => {});
+        }
+        const sampleCount = Math.ceil(audioContext.sampleRate * 0.22);
+        whooshNoiseBuffer = audioContext.createBuffer(1, sampleCount, audioContext.sampleRate);
+        const samples = whooshNoiseBuffer.getChannelData(0);
+        for (let index = 0; index < sampleCount; index++) {
+          samples[index] = Math.random() * 2 - 1;
+        }
+      } catch {
+        audioContext = null;
+        whooshNoiseBuffer = null;
+      }
+    }
+
+    function playClickSound() {
+      enableAudioFromPointerDown();
+      if (!audioContext) return;
+      try {
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(800, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.05);
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gain.disconnect();
+        };
+      } catch (error) {
+        console.warn("Unable to play button click audio.", error);
+      }
+    }
+
+    document.addEventListener("pointerdown", (event) => {
+      const button = event.target instanceof Element ? event.target.closest("button") : null;
+      if (button && !button.disabled) playClickSound();
+    }, { capture: true });
+    document.addEventListener("click", (event) => {
+      const button = event.target instanceof Element ? event.target.closest("button") : null;
+      if (button && !button.disabled && event.detail === 0) playClickSound();
+    }, { capture: true });
+
+    function drawContainedImage(image, x, y, width, height) {
+      if (!image || !image.complete || image.naturalWidth === 0) return false;
+      const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+      const drawWidth = image.naturalWidth * scale;
+      const drawHeight = image.naturalHeight * scale;
+      ctx.drawImage(image, x + (width - drawWidth) / 2,
+        y + (height - drawHeight) / 2, drawWidth, drawHeight);
+      return true;
+    }
+
+    function loadImageWithTransparentWhite(source) {
+      return new Promise((resolve) => {
+        const image = typeof source === "string" ? new Image() : source;
+        let processingStarted = false;
+        const processImage = () => {
+          if (processingStarted) return;
+          processingStarted = true;
+          if (image.naturalWidth === 0) {
+            resolve(null);
+            return;
+          }
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = image.naturalWidth;
+          tempCanvas.height = image.naturalHeight;
+          const tempContext = tempCanvas.getContext("2d", { willReadFrequently: true });
+          try {
+            tempContext.drawImage(image, 0, 0);
+            const imageData = tempContext.getImageData(0, 0,
+              tempCanvas.width, tempCanvas.height);
+            const pixels = imageData.data;
+            for (let index = 0; index < pixels.length; index += 4) {
+              if (pixels[index] > 240 && pixels[index + 1] > 240 && pixels[index + 2] > 240) {
+                pixels[index + 3] = 0;
+              }
+            }
+            tempContext.putImageData(imageData, 0, 0);
+
+            const transparentImage = new Image();
+            transparentImage.onload = () => resolve(transparentImage);
+            transparentImage.onerror = () => resolve(image);
+            transparentImage.src = tempCanvas.toDataURL("image/png");
+          } catch {
+            resolve(image);
+          }
+        };
+        image.onerror = () => resolve(null);
+        image.onload = processImage;
+        if (typeof source === "string") {
+          image.src = source;
+        } else if (image.complete) {
+          processImage();
+        }
+      });
+    }
+
+    function resetBottle() {
+      stopChargeSound();
+      getCurrentLevel();
+      currentBottleImage = bottleImages[Math.min(levelIndex, LEVELS.length - 1)] || null;
+      bottle.x = startX;
+      bottle.y = groundY - BOTTLE.height / 2;
+      bottle.vx = 0;
+      bottle.vy = 0;
+      bottle.angle = 0;
+      bottle.angularVelocity = 0;
+      charge = 0;
+      phase = "ready";
+      resultTimer = 0;
+      handReachTime = 0;
+      settlingStartAngle = 0;
+      settlingElapsed = 0;
+      slideElapsed = 0;
+      slideStartX = 0;
+      slideDistance = 0;
+      cameraTargetX = 0;
+      windForce = Math.round(Math.random() * 120 - 60) *
+        (currentAffix?.id === "storm" ? 2 : 1);
+      selectReachableEndlessTarget();
+      spawnStar();
+      starCollectedThisThrow = false;
+      gravityLockThisThrow = false;
+      scoreFrenzyThisThrow = false;
+      bounceUsed = false;
+      tuituiUsed = false;
+      throwScoreBonusAwarded = false;
+      apexInterferenceTriggered = false;
+      crow = null;
+      lightningRemaining = 0;
+      pickupMessage = "";
+      pickupMessageRemaining = 0;
+      goldenFlashRemaining = 0;
+      screenShakeRemaining = 0;
+      clearMemeEffect();
+      const uprightToleranceDegrees = 75;
+    }
+
+    completionRestart.addEventListener("click", () => {
+      levelIndex = 0;
+      score = 0;
+      comboCount = 0;
+      level30EasterEggShown = false;
+      scoreBreaksRecord = false;
+      acquiredPerks.magnet = false;
+      acquiredPerks.bounce = false;
+      acquiredPerks.rewind = false;
+      acquiredPerks.defense = false;
+      acquiredPerks.jige = false;
+      acquiredPerks.tuitui = false;
+      acquiredPerks.xuebao = false;
+      clearEasterEggs();
+      resetBottle();
+      completionOverlay.hidden = true;
+      gameStarted = true;
+    });
+
+    function showPerkSelection() {
+      phase = "perkSelect";
+      const shuffledPerks = [...PERKS];
+      for (let index = shuffledPerks.length - 1; index > 0; index--) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledPerks[index], shuffledPerks[swapIndex]] =
+          [shuffledPerks[swapIndex], shuffledPerks[index]];
+      }
+      const options = shuffledPerks.slice(0, 3);
+      perkOptions.replaceChildren();
+      for (const perk of options) {
+        const button = document.createElement("button");
+        button.className = "perk-option";
+        button.type = "button";
+        if (perk.image) {
+          const image = document.createElement("img");
+          image.src = perk.image;
+          image.alt = perk.name;
+          image.addEventListener("error", () => {
+            const fallback = document.createElement("span");
+            fallback.className = "perk-icon";
+            fallback.textContent = "✨";
+            image.replaceWith(fallback);
+          }, { once: true });
+          button.append(image);
+        } else {
+          const icon = document.createElement("span");
+          icon.className = "perk-icon";
+          icon.textContent = perk.icon;
+          button.append(icon);
+        }
+        const title = document.createElement("strong");
+        title.textContent = `【${perk.name}】`;
+        const description = document.createElement("span");
+        description.textContent = perk.description;
+        button.append(title, description);
+        button.addEventListener("click", () => {
+          unlockMemeAudio(jigeAudio);
+          unlockMemeAudio(tuituiAudio);
+          for (const perkId of Object.keys(acquiredPerks)) {
+            acquiredPerks[perkId] = false;
+          }
+          acquiredPerks[perk.id] = true;
+          levelIndex++;
+          resetBottle();
+          if (levelIndex === 29) triggerLevel30EasterEgg();
+        });
+        perkOptions.append(button);
+      }
+    }
+
+    function showGameOver() {
+      if (phase === "gameOver") return;
+      phase = "gameOver";
+      completionMessage.textContent =
+        `本次得分：${score}　历史最高分：${highScore}`;
+      recordMessage.hidden = !scoreBreaksRecord;
+      completionOverlay.hidden = false;
+      playGameOverSound();
+    }
+
+    rewindButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!acquiredPerks.rewind || !["flying", "result"].includes(phase)) return;
+      if (throwScoreBonusAwarded) {
+        score = Math.max(0, score - 100);
+        throwScoreBonusAwarded = false;
+      }
+      resetBottle();
+    });
+
+    function throwBottle() {
+      if (phase !== "charging") return;
+      stopChargeSound();
+      playThrowWhoosh();
+      const strength = charge;
+      const level = getCurrentLevel();
+      bottle.vx = (180 + strength * 120) * level.horizontalSpeedMultiplier;
+      bottle.vy = level.verticalSpeed || -550;
+      bottle.angle = 0;
+      bottle.angularVelocity = ((Math.PI * 2) + (strength * Math.PI * 2)) *
+        level.spinSpeedMultiplier * (level.spinMultiplierBonus || 1);
+        const uprightToleranceDegrees = 90;
+      bounceUsed = false;
+      apexInterferenceTriggered = false;
+      crow = null;
+      lightningRemaining = 0;
+      handReachTime = HAND_REACH_DURATION;
+      phase = "flying";
+      if (acquiredPerks.jige) {
+        addScore(100);
+        throwScoreBonusAwarded = true;
+        playAudioFromStart(jigeAudio, "鸡你太美播放失败:");
+        showMemeEffect("jige");
+      }
+    }
+
+    function spawnStar() {
+      const landingZone = getLandingZone();
+      const nearestX = Math.max(startX + 50, landingZone.x - 120);
+      const farthestX = Math.max(nearestX, landingZone.x - 35);
+      star = {
+        x: nearestX + Math.random() * (farthestX - nearestX),
+        y: 180 + Math.random() * 100,
+        radius: 13,
+        type: Math.random() < 0.5 ? "slowTime" : "upright"
+      };
+    }
+
+    function collectStarIfTouched() {
+      if (!star) return;
+      const corners = getBottleCorners();
+      const minX = Math.min(...corners.map((corner) => corner.x));
+      const maxX = Math.max(...corners.map((corner) => corner.x));
+      const minY = Math.min(...corners.map((corner) => corner.y));
+      const maxY = Math.max(...corners.map((corner) => corner.y));
+      const nearestX = Math.max(minX, Math.min(star.x, maxX));
+      const nearestY = Math.max(minY, Math.min(star.y, maxY));
+      const distanceX = star.x - nearestX;
+      const distanceY = star.y - nearestY;
+      if (distanceX * distanceX + distanceY * distanceY > star.radius * star.radius) return;
+
+      const collectedType = star.type;
+      star = null;
+      starCollectedThisThrow = true;
+      const durationMultiplier = acquiredPerks.magnet ? 2 : 1;
+      if (collectedType === "slowTime") {
+        gravityLockThisThrow = true;
+        pickupMessage = "引力锁定！";
+      } else {
+        scoreFrenzyThisThrow = true;
+        pickupMessage = "得分翻倍！";
+      }
+      pickupMessageRemaining = 0.8 * durationMultiplier;
+      if (collectedType === "upright") {
+        if (acquiredPerks.defense) {
+          goldenFlashRemaining = 0.3;
+          screenShakeRemaining = 0.3;
+        }
+      }
+    }
+
+    function finishThrow(success) {
+      if (phase === "result" || phase === "perkSelect" || phase === "gameOver") return;
+      phase = "result";
+      resultSuccess = success;
+      resultTimer = 1;
+      bottle.vx = 0;
+      bottle.vy = 0;
+      if (success) {
+        comboCount += 1;
+        const endlessBonus = levelIndex >= LEVELS.length
+          ? (levelIndex - LEVELS.length) * 50
+          : 0;
+        let roundScore = 100 + endlessBonus;
+        if (windForce !== 0) roundScore += 50;
+        if (starCollectedThisThrow) roundScore += 50;
+        if (acquiredPerks.xuebao) roundScore *= 2;
+        const scoreMultiplier = scoreFrenzyThisThrow ? 2 : 1;
+        const throwBonus = throwScoreBonusAwarded ? 100 * (scoreMultiplier - 1) : 0;
+        addScore(roundScore * scoreMultiplier + throwBonus);
+        if (comboCount % 3 === 0) triggerHighComboEgg();
+      } else {
+        comboCount = 0;
+        playFailureSound();
+      }
+    }
+
+    function getBottleCorners() {
+      const halfWidth = BOTTLE.width / 2;
+      const halfHeight = BOTTLE.height / 2;
+      const cosine = Math.cos(bottle.angle);
+      const sine = Math.sin(bottle.angle);
+      return [
+        [-halfWidth, -halfHeight],
+        [halfWidth, -halfHeight],
+        [halfWidth, halfHeight],
+        [-halfWidth, halfHeight]
+      ].map(([localX, localY]) => ({
+        x: bottle.x + localX * cosine - localY * sine,
+        y: bottle.y + localX * sine + localY * cosine
+      }));
+    }
+
+    function bottleTouchesTable(corners) {
+      const intersections = [];
+      for (let index = 0; index < corners.length; index++) {
+        const start = corners[index];
+        const end = corners[(index + 1) % corners.length];
+        const deltaY = end.y - start.y;
+        if (Math.abs(deltaY) <= LANDING_CONTACT_EPSILON) {
+          if (Math.abs(start.y - TABLE.y) <= LANDING_CONTACT_EPSILON) {
+            intersections.push(start.x, end.x);
+          }
+          continue;
+        }
+        const t = (TABLE.y - start.y) / deltaY;
+        if (t >= 0 && t <= 1) intersections.push(start.x + (end.x - start.x) * t);
+      }
+
+      if (intersections.length === 0) return false;
+      return Math.max(...intersections) >= TABLE.x - LANDING_CONTACT_EPSILON &&
+        Math.min(...intersections) <= TABLE.x + TABLE.width + LANDING_CONTACT_EPSILON;
+    }
+
+    function rescueWithTuitui() {
+      if (!acquiredPerks.tuitui || tuituiUsed) return false;
+      const landingZone = getLandingZone();
+      bottle.x = landingZone.x + landingZone.width / 2;
+      bottle.y = TABLE.y - BOTTLE.height / 2;
+      bottle.vx = 0;
+      bottle.vy = 0;
+      bottle.angle = 0;
+      bottle.angularVelocity = 0;
+      tuituiUsed = true;
+      playAudioFromStart(tuituiAudio, "退退退播放失败:");
+      showMemeEffect("tuitui");
+      finishThrow(true);
+      return true;
+    }
+
+    function startBottleSettling(angleDegrees) {
+      playSuccessCandySound();
+      bottle.y = TABLE.y - BOTTLE.height / 2;
+      settlingStartAngle = angleDegrees > 180
+        ? (angleDegrees - 360) * Math.PI / 180
+        : angleDegrees * Math.PI / 180;
+      settlingElapsed = 0;
+      bottle.vx = 0;
+      bottle.vy = 0;
+      bottle.angularVelocity = 0;
+      phase = "settling";
+    }
+
+    function handleLanding(previousPose) {
+      const level = getCurrentLevel();
+      const landingZone = getLandingZone();
+      const corners = getBottleCorners();
+      const lowestY = Math.max(...corners.map((corner) => corner.y));
+      const halfWidth = BOTTLE.width / 2;
+      const halfHeight = BOTTLE.height / 2;
+      const previousBaseY = previousPose.y + Math.cos(previousPose.angle) * halfHeight +
+        Math.abs(Math.sin(previousPose.angle)) * halfWidth;
+      const currentBaseY = bottle.y + Math.cos(bottle.angle) * halfHeight +
+        Math.abs(Math.sin(bottle.angle)) * halfWidth;
+      let baseCenterX = bottle.x - Math.sin(bottle.angle) * halfHeight;
+      const baseHalfWidthX = Math.abs(Math.cos(bottle.angle)) * halfWidth;
+      const baseCrossedTable = previousBaseY <= TABLE.y + LANDING_CONTACT_EPSILON &&
+        currentBaseY >= TABLE.y - LANDING_CONTACT_EPSILON &&
+        baseCenterX + baseHalfWidthX >= TABLE.x - LANDING_CONTACT_EPSILON &&
+        baseCenterX - baseHalfWidthX <= TABLE.x + TABLE.width + LANDING_CONTACT_EPSILON;
+      const touchedTable = bottleTouchesTable(corners) || baseCrossedTable;
+
+      if (bottle.vy > 0 && touchedTable) {
+        if (!acquiredPerks.tuitui && level.autoPark &&
+          baseCenterX >= landingZone.x - 50 &&
+          baseCenterX <= landingZone.x + landingZone.width + 50) {
+          const landingCenterX = landingZone.x + landingZone.width / 2;
+          bottle.x += landingCenterX - baseCenterX;
+          baseCenterX = landingCenterX;
+        }
+        const angleDegrees = ((bottle.angle * 180 / Math.PI) % 360 + 360) % 360;
+        const angleErrorDegrees = Math.min(angleDegrees, 360 - angleDegrees);
+        const uprightToleranceDegrees = gravityLockThisThrow
+          ? 120
+          : 45 + (level.uprightToleranceBonus || 0);
+        const insideLandingZone = baseCenterX > landingZone.x &&
+          baseCenterX < landingZone.x + landingZone.width;
+        bottle.y -= lowestY - TABLE.y;
+        const landedUpright = insideLandingZone &&
+          angleErrorDegrees <= uprightToleranceDegrees;
+        if (!landedUpright && rescueWithTuitui()) return;
+        if (landedUpright) {
+          startBottleSettling(angleDegrees);
+        } else {
+          if (!insideLandingZone && acquiredPerks.bounce && !bounceUsed) {
+            bounceUsed = true;
+            bottle.y -= lowestY - TABLE.y;
+            bottle.vy = -Math.max(250, Math.abs(bottle.vy) * 0.62);
+          } else if (currentAffix?.id === "ice") {
+            slideElapsed = 0;
+            slideStartX = bottle.x;
+            slideDistance = SLIDE_DISTANCE_MIN +
+              Math.random() * (SLIDE_DISTANCE_MAX - SLIDE_DISTANCE_MIN);
+            phase = "sliding";
+          } else {
+            finishThrow(false);
+          }
+        }
+      } else if (Math.min(...corners.map((corner) => corner.y)) > HEIGHT) {
+        if (rescueWithTuitui()) return;
+        finishThrow(false);
+      }
+    }
+
+    function update(deltaTime) {
+      const level = getCurrentLevel();
+      if (currentAffix?.id === "blur") {
+        for (const cloud of visualClouds) {
+          cloud.x += cloud.speed * deltaTime;
+          if (cloud.x - cloud.size > WIDTH) {
+            cloud.x = -cloud.size;
+            cloud.y = 125 + Math.random() * 250;
+          }
+        }
+      }
+      if (phase !== "flying") {
+        cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-8 * deltaTime));
+      }
+      if (phase === "flying" && handReachTime > 0) {
+        handReachTime = Math.max(0, handReachTime - deltaTime);
+      }
+
+      if (phase === "settling") {
+        settlingElapsed = Math.min(SETTLING_DURATION, settlingElapsed + deltaTime);
+        const progress = settlingElapsed / SETTLING_DURATION;
+        const lerpedAngle = settlingStartAngle * (1 - progress);
+        const springRebound = Math.sin(progress * Math.PI * 3) * (1 - progress) * 0.035;
+        bottle.angle = lerpedAngle + springRebound;
+        if (progress >= 1) {
+          bottle.angle = 0;
+          finishThrow(true);
+        }
+        return;
+      }
+
+      if (phase === "sliding") {
+        slideElapsed = Math.min(SLIDE_DURATION, slideElapsed + deltaTime);
+        const progress = slideElapsed / SLIDE_DURATION;
+        bottle.x = slideStartX + slideDistance * (1 - (1 - progress) ** 2);
+        bottle.angle += bottle.angularVelocity * deltaTime;
+        bottle.angularVelocity *= Math.exp(-3 * deltaTime);
+        const lowestY = Math.max(...getBottleCorners().map((corner) => corner.y));
+        bottle.y += TABLE.y - lowestY;
+        if (progress >= 1) {
+          const landingZone = getLandingZone();
+          const baseCenterX = bottle.x - Math.sin(bottle.angle) * (BOTTLE.height / 2);
+          const angleDegrees = ((bottle.angle * 180 / Math.PI) % 360 + 360) % 360;
+          const angleErrorDegrees = Math.min(angleDegrees, 360 - angleDegrees);
+          const uprightToleranceDegrees = gravityLockThisThrow
+            ? 120
+            : 45 + (level.uprightToleranceBonus || 0);
+          const insideLandingZone = baseCenterX > landingZone.x &&
+            baseCenterX < landingZone.x + landingZone.width;
+          if (insideLandingZone && angleErrorDegrees <= uprightToleranceDegrees) {
+            startBottleSettling(angleDegrees);
+          } else {
+            finishThrow(false);
+          }
+        }
+        return;
+      }
+
+      if (phase === "charging") {
+        charge = computeChargeStrength();
+        updateChargeSound(charge);
+        return;
+      }
+
+      if (phase === "result") {
+        resultTimer = Math.max(0, resultTimer - deltaTime);
+        if (resultTimer === 0) {
+          if (resultSuccess) {
+            showPerkSelection();
+            return;
+          }
+          showGameOver();
+        }
+        return;
+      }
+
+      if (phase !== "flying") return;
+
+      const previousPose = { x: bottle.x, y: bottle.y, angle: bottle.angle };
+      bottle.vx *= Math.exp(-0.04 * deltaTime);
+      bottle.vx += windForce * deltaTime;
+      bottle.vy += level.gravity * deltaTime;
+      bottle.vy *= Math.exp(-0.015 * deltaTime);
+      bottle.x += bottle.vx * deltaTime;
+      bottle.y += bottle.vy * deltaTime;
+      bottle.angle += bottle.angularVelocity * deltaTime;
+      collectStarIfTouched();
+      if (!apexInterferenceTriggered && bottle.vy >= 0) {
+        apexInterferenceTriggered = true;
+        if (acquiredPerks.xuebao) showMemeEffect("xuebao");
+        if (levelIndex >= 3 && Math.random() < 0.3) {
+          if (Math.random() < 0.5) {
+            crow = { x: bottle.x - 260, y: Math.max(32, bottle.y - 95), remaining: 1.4 };
+          } else {
+            lightningRemaining = 0.18;
+          }
+        }
+      }
+      if (crow) {
+        crow.x += 360 * deltaTime;
+        crow.remaining = Math.max(0, crow.remaining - deltaTime);
+        if (crow.remaining === 0) crow = null;
+      }
+      cameraTargetX = Math.max(0, bottle.x - 400);
+      cameraX = cameraTargetX;
+      handleLanding(previousPose);
+    }
+
+    function drawBottle() {
+      const level = getCurrentLevel();
+      ctx.save();
+      ctx.translate(bottle.x, bottle.y);
+      ctx.rotate(getDisplayedAngle());
+      if (gravityLockThisThrow) {
+        ctx.shadowColor = "#39aaff";
+        ctx.shadowBlur = 18 + 12 * Math.abs(Math.sin(performance.now() / 70));
+      } else if (scoreFrenzyThisThrow && Math.sin(performance.now() / 65) > 0) {
+        ctx.shadowColor = "#4cff63";
+        ctx.shadowBlur = 24;
+      }
+      if (gravityLockThisThrow) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(59, 175, 255, 0.9)";
+        ctx.lineWidth = 4;
+        ctx.shadowColor = "#39aaff";
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.ellipse(0, BOTTLE.height / 2 - 2, 27, 8, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (currentBottleImage && currentBottleImage.complete && currentBottleImage.naturalWidth > 0) {
+        const imageWidth = BOTTLE_IMAGE_HEIGHT * currentBottleImage.naturalWidth / currentBottleImage.naturalHeight;
+        const imageY = BOTTLE.height / 2 - BOTTLE_IMAGE_HEIGHT;
+        ctx.drawImage(currentBottleImage, -imageWidth / 2, imageY,
+          imageWidth, BOTTLE_IMAGE_HEIGHT);
+        if (scoreFrenzyThisThrow && Math.sin(performance.now() / 65) > 0) {
+          ctx.globalCompositeOperation = "source-atop";
+          ctx.fillStyle = "rgba(58, 255, 96, 0.6)";
+          ctx.fillRect(-imageWidth / 2, imageY, imageWidth, BOTTLE_IMAGE_HEIGHT);
+        }
+        ctx.restore();
+        return;
+      }
+
+      if (levelIndex === 5) {
+        ctx.strokeStyle = "#28343a";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(-34, 19, 21, 0, Math.PI * 2);
+        ctx.arc(34, 19, 21, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = level.color;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(-34, 19);
+        ctx.lineTo(-11, -8);
+        ctx.lineTo(11, 19);
+        ctx.lineTo(-34, 19);
+        ctx.lineTo(-2, 19);
+        ctx.lineTo(20, -10);
+        ctx.lineTo(34, 19);
+        ctx.moveTo(11, 19);
+        ctx.lineTo(20, -10);
+        ctx.stroke();
+        ctx.fillStyle = "#22282b";
+        ctx.fillRect(15, -16, 18, 4);
+        ctx.fillRect(-41, -1, 20, 4);
+        ctx.restore();
+        return;
+      }
+
+      if (levelIndex === 6) {
+        ctx.fillStyle = "#252a2e";
+        ctx.beginPath();
+        ctx.arc(-32, 23, 13, 0, Math.PI * 2);
+        ctx.arc(32, 23, 13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = level.color;
+        ctx.fillRect(-43, -1, 86, 20);
+        ctx.fillRect(-10, -15, 38, 18);
+        ctx.fillRect(20, -23, 5, 14);
+        ctx.fillStyle = "#c8d7da";
+        ctx.fillRect(-4, -12, 22, 10);
+        ctx.fillStyle = "#f1ce65";
+        ctx.fillRect(36, 4, 7, 6);
+        ctx.restore();
+        return;
+      }
+
+      if (levelIndex === 7) {
+        ctx.fillStyle = "#252a2e";
+        ctx.beginPath();
+        ctx.ellipse(-40, 20, 15, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(40, 20, 15, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = level.color;
+        ctx.beginPath();
+        ctx.moveTo(-58, 12);
+        ctx.lineTo(-42, -8);
+        ctx.lineTo(-17, -16);
+        ctx.lineTo(28, -15);
+        ctx.lineTo(51, -4);
+        ctx.lineTo(60, 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#a9c9d2";
+        ctx.beginPath();
+        ctx.moveTo(-32, -7);
+        ctx.lineTo(-15, -12);
+        ctx.lineTo(7, -12);
+        ctx.lineTo(7, -3);
+        ctx.lineTo(-36, -3);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#e7e9eb";
+        ctx.fillRect(47, 3, 8, 4);
+        ctx.restore();
+        return;
+      }
+
+      const bodyY = -42;
+      const bodyHeight = levelIndex >= 3 ? 96 : 84;
+      const bodyWidth = levelIndex >= 3 ? 40 : BOTTLE.width;
+      const bodyLeft = -bodyWidth / 2;
+      ctx.fillStyle = phase === "result" && Math.floor(resultTimer * 8) % 2 === 0
+        ? (resultSuccess ? "#64c86f" : "#e8554f")
+        : scoreFrenzyThisThrow && Math.sin(performance.now() / 65) > 0
+          ? "#59e979"
+          : level.color;
+      ctx.fillRect(bodyLeft, bodyY, bodyWidth, bodyHeight);
+      ctx.fillRect(-7, -48, 14, 7);
+      ctx.fillStyle = "#625447";
+      ctx.fillRect(-7, -48, 14, 4);
+
+      const waterHeight = bodyHeight * (level.water || 0.35);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(bodyLeft + 2, bodyY + 2, bodyWidth - 4, bodyHeight - 4);
+      ctx.clip();
+      ctx.fillStyle = "rgba(54, 139, 205, 0.82)";
+      ctx.fillRect(bodyLeft + 2, bodyY + bodyHeight - waterHeight,
+        bodyWidth - 4, waterHeight);
+      ctx.restore();
+
+      ctx.strokeStyle = "#382f29";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bodyLeft, bodyY, bodyWidth, bodyHeight);
+      ctx.strokeRect(-7, -48, 14, 7);
+      ctx.restore();
+    }
+
+    function getDisplayedAngle() {
+      return phase === "ready" || phase === "charging" ? 0 : bottle.angle;
+    }
+
+    function draw() {
+      completionOverlay.hidden = phase !== "gameOver";
+      perkOverlay.hidden = phase !== "perkSelect";
+      rewindButton.hidden = !acquiredPerks.rewind ||
+        !["flying", "result"].includes(phase);
+      if (!rewindButton.hidden) {
+        const canvasBounds = canvas.getBoundingClientRect();
+        rewindButton.style.left = `${canvasBounds.left + canvasBounds.width / 2}px`;
+        rewindButton.style.top = `${canvasBounds.top + canvasBounds.height * 0.88}px`;
+      }
+      const displayedAngle = getDisplayedAngle();
+      const tiltDegrees = Math.atan2(Math.sin(displayedAngle), Math.cos(displayedAngle)) * 180 / Math.PI;
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.fillStyle = "#eadfca";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.save();
+      if (screenShakeRemaining > 0) {
+        const shakeStrength = 8 * Math.min(1, screenShakeRemaining / 0.3);
+        ctx.translate((Math.random() - 0.5) * shakeStrength,
+          (Math.random() - 0.5) * shakeStrength);
+      }
+
+      const level = getCurrentLevel();
+      const landingZone = getLandingZone();
+      const currentRank = RANKS[getRankIndex()];
+      ctx.fillStyle = "rgba(24, 22, 18, 0.82)";
+      ctx.fillRect(12, 8, 210, 62);
+      ctx.font = "bold 18px sans-serif";
+      ctx.textAlign = "left";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#171511";
+      const scoreLabel = `得分: ${score}`;
+      const rankLabel = `段位: ${currentRank.name}`;
+      ctx.strokeText(scoreLabel, 22, 33);
+      ctx.strokeText(rankLabel, 22, 58);
+      ctx.fillStyle = "#ffe45c";
+      ctx.fillText(scoreLabel, 22, 33);
+      ctx.fillStyle = currentRank.color;
+      ctx.fillText(rankLabel, 22, 58);
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillStyle = acquiredPerks.tuitui ? "#148a35" : "#7b312b";
+      ctx.fillText(acquiredPerks.tuitui ? "退退退就绪" : "退退退未激活", 22, 87);
+
+      ctx.fillStyle = "#171511";
+      ctx.font = "bold 22px sans-serif";
+      ctx.textAlign = "left";
+      const levelName = levelIndex >= LEVELS.length ? "特斯拉大军" : level.name;
+      ctx.fillText(`第 ${levelIndex + 1} 关：${levelName}`, 22, 117);
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(level.water === undefined
+        ? "重物抛掷"
+        : `水量 ${Math.round(level.water * 100)}%`, 22, 140);
+
+      const insideLandingZone = bottle.x >= landingZone.x &&
+        bottle.x <= landingZone.x + landingZone.width;
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillStyle = "#171511";
+      ctx.fillText(`倾斜角度：${tiltDegrees.toFixed(1)}°`, 22, 164);
+      ctx.fillText(`旋转速度：${(bottle.angularVelocity * 180 / Math.PI).toFixed(0)}°/秒`, 22, 186);
+      ctx.fillStyle = insideLandingZone ? "#238b3b" : "#b52f2b";
+      ctx.fillText(`判定区：${insideLandingZone ? "区内" : "区外"}`, 22, 208);
+
+      if (gravityLockThisThrow || scoreFrenzyThisThrow) {
+        ctx.textAlign = "left";
+        ctx.fillStyle = gravityLockThisThrow ? "#0878bd" : "#168a34";
+        ctx.fillText(gravityLockThisThrow ? "✦ 引力锁定" : "✦ 得分翻倍", 22, 230);
+      }
+
+      ctx.fillStyle = "rgba(24, 22, 18, 0.72)";
+      ctx.fillRect(252, 8, 180, 54);
+      drawWindSack();
+      ctx.font = "bold 15px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff5df";
+      const windLabel = windForce === 0
+        ? "无风 0"
+        : `${windForce < 0 ? "←" : "→"} 风力 ${Math.abs(windForce)}`;
+      ctx.fillText(windLabel, 420, 36);
+      if (currentAffix) {
+        ctx.fillStyle = "rgba(24, 22, 18, 0.82)";
+        ctx.fillRect(438, 8, 190, 54);
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffcf52";
+        ctx.fillText(`词缀：${currentAffix.name}`, 533, 37);
+      }
+
+      const bar = { x: 220, y: 88, width: 200, height: 16 };
+      ctx.fillStyle = "#2d2924";
+      ctx.fillRect(bar.x - 3, bar.y - 3, bar.width + 6, bar.height + 6);
+      ctx.fillStyle = "#c6bcaa";
+      ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
+      if (phase === "charging") {
+        ctx.fillStyle = "#4d9b43";
+        ctx.fillRect(bar.x, bar.y, bar.width * charge, bar.height);
+      }
+      ctx.fillStyle = "#171511";
+      ctx.font = "bold 13px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(phase === "charging" ? `蓄力 ${Math.round(charge * 100)}%` : "蓄力",
+        WIDTH / 2, 82);
+
+      ctx.save();
+      ctx.translate(-cameraX, 0);
+      ctx.fillStyle = "#565451";
+      ctx.fillRect(TABLE.x, TABLE.y, TABLE.width, TABLE.height);
+      ctx.fillStyle = "#77736d";
+      ctx.fillRect(TABLE.x, TABLE.y, TABLE.width, 4);
+      ctx.fillStyle = "#56b85c";
+      ctx.fillRect(landingZone.x, TABLE.y - 2, landingZone.width, 7);
+      if (star) drawStar(star.x, star.y, star.radius, star.type);
+      if (crow) drawCrow(crow.x, crow.y);
+
+      if (phase === "ready" || phase === "charging" ||
+        (phase === "flying" && handReachTime > 0)) {
+        const chargeProgress = phase === "charging" ? charge : 0;
+        const handScale = 1 - chargeProgress * 0.08;
+        const handWidth = HAND_IMAGE_WIDTH * handScale;
+        const handHeight = handImage && handImage.naturalWidth > 0
+          ? handWidth * handImage.naturalHeight / handImage.naturalWidth
+          : handWidth * 409 / 584;
+        const reachProgress = phase === "flying"
+          ? handReachTime / HAND_REACH_DURATION
+          : 0;
+        const handX = bottle.x - handWidth / 2 - 20 - chargeProgress * 16 + reachProgress * 28;
+        const handY = groundY - 26 - chargeProgress * 12 - reachProgress * 6;
+        if (!drawContainedImage(handImage, handX, handY, handWidth, handHeight)) {
+          ctx.fillStyle = "#d99b72";
+          ctx.fillRect(handX + handWidth * 0.16, handY + handHeight * 0.42,
+            handWidth * 0.68, handHeight * 0.4);
+          ctx.fillRect(handX + handWidth * 0.62, handY + handHeight * 0.2,
+            handWidth * 0.24, handHeight * 0.38);
+        }
+      }
+      drawBottle();
+      ctx.restore();
+
+      ctx.fillStyle = "#171511";
+      ctx.font = "bold 18px sans-serif";
+      ctx.textAlign = "center";
+      if (phase === "ready") {
+        ctx.fillText("按住蓄力", WIDTH / 2, 448);
+      } else if (phase === "charging") {
+        ctx.fillText("松开抛出", WIDTH / 2, 448);
+      } else if (phase === "result") {
+        ctx.font = "bold 30px sans-serif";
+        ctx.fillStyle = resultSuccess ? "#238b3b" : "#b52f2b";
+        ctx.fillText(resultSuccess ? "立住了！" : "倒了！", WIDTH / 2, 250);
+      } else if (phase === "complete") {
+        ctx.font = "bold 30px sans-serif";
+        ctx.fillStyle = "#238b3b";
+        ctx.fillText("立住了！", WIDTH / 2, 250);
+      }
+      ctx.restore();
+
+      drawVisualInterference();
+
+      if (goldenFlashRemaining > 0) {
+        const flashAlpha = 0.28 * (goldenFlashRemaining / 0.3);
+        ctx.fillStyle = `rgba(255, 205, 45, ${flashAlpha})`;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      }
+      if (lightningRemaining > 0) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * lightningRemaining / 0.18})`;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      }
+      if (pickupMessageRemaining > 0 && !comboEasterEggActive) {
+        const messageAlpha = Math.min(1, pickupMessageRemaining / 0.2);
+        ctx.save();
+        ctx.globalAlpha = messageAlpha;
+        ctx.fillStyle = pickupMessage === "引力锁定！"
+          ? "rgba(19, 77, 147, 0.88)"
+          : "rgba(28, 112, 49, 0.88)";
+        ctx.fillRect(105, 205, 430, 70);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 38px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(pickupMessage, WIDTH / 2, 240);
+        ctx.restore();
+      }
+    }
+
+    function drawVisualInterference() {
+      if (currentAffix?.id !== "blur") return;
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      for (const cloud of visualClouds) {
+        ctx.globalAlpha = 0.2;
+        ctx.beginPath();
+        ctx.ellipse(cloud.x, cloud.y, cloud.size * 0.62, cloud.size * 0.3,
+          0, 0, Math.PI * 2);
+        ctx.ellipse(cloud.x - cloud.size * 0.32, cloud.y + cloud.size * 0.06,
+          cloud.size * 0.34, cloud.size * 0.22, 0, 0, Math.PI * 2);
+        ctx.ellipse(cloud.x + cloud.size * 0.3, cloud.y + cloud.size * 0.04,
+          cloud.size * 0.4, cloud.size * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawWindSack() {
+      const x = 280;
+      const y = 34;
+      const direction = Math.sign(windForce);
+      ctx.save();
+      ctx.strokeStyle = "#594c3a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 16);
+      ctx.lineTo(x, y + 20);
+      ctx.stroke();
+      if (direction === 0) {
+        ctx.fillStyle = "#b69a56";
+        ctx.beginPath();
+        ctx.arc(x - 12, y - 5, 7, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const tipX = x + direction * (12 + Math.abs(windForce) * 0.35);
+        ctx.fillStyle = windForce < 0 ? "#5597d1" : "#e58a49";
+        ctx.beginPath();
+        ctx.moveTo(x, y - 11);
+        ctx.lineTo(tipX, y - 5);
+        ctx.lineTo(x, y + 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#f3e7ca";
+        ctx.beginPath();
+        ctx.moveTo(x + direction * 3, y - 8);
+        ctx.lineTo(x + direction * 9, y - 5);
+        ctx.lineTo(x + direction * 3, y - 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawCrow(x, y) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#181719";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 18, 7, -0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-8, 0);
+      ctx.quadraticCurveTo(-26, -19, -31, -7);
+      ctx.quadraticCurveTo(-19, -9, -12, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(0, -1);
+      ctx.quadraticCurveTo(13, -22, 23, -12);
+      ctx.quadraticCurveTo(10, -11, 7, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(14, -4, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#d9aa38";
+      ctx.beginPath();
+      ctx.moveTo(18, -5);
+      ctx.lineTo(27, -2);
+      ctx.lineTo(18, -1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStar(x, y, radius, type) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = type === "slowTime" ? "#48a8ff" : "#52db69";
+      ctx.strokeStyle = type === "slowTime" ? "#155b9d" : "#177b35";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let point = 0; point < 10; point++) {
+        const angle = -Math.PI / 2 + point * Math.PI / 5;
+        const pointRadius = point % 2 === 0 ? radius : radius * 0.46;
+        const pointX = Math.cos(angle) * pointRadius;
+        const pointY = Math.sin(angle) * pointRadius;
+        if (point === 0) ctx.moveTo(pointX, pointY);
+        else ctx.lineTo(pointX, pointY);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function computeChargeStrength() {
+      const level = getCurrentLevel();
+      const heldSeconds = (performance.now() - chargeStartTime) / 1000;
+      if (!Number.isFinite(heldSeconds) || heldSeconds < MIN_CHARGE_HOLD_SECONDS) {
+        return 0;
+      }
+      const duration = level.chargeDuration || 1;
+      return Math.max(0, Math.min(1, heldSeconds / duration));
+    }
+
+    function beginCharge(event) {
+      if (event.type === "mousedown" && event.button !== 0) return;
+      if (!gameStarted || !imagesReady || phase !== "ready") return;
+      if (event.cancelable) event.preventDefault();
+      enableAudioFromPointerDown();
+      phase = "charging";
+      charge = 0;
+      chargeStartTime = performance.now();
+      startChargeSound();
+    }
+
+    function endCharge(event) {
+      if (phase !== "charging") return;
+      if (event?.cancelable) event.preventDefault();
+      charge = computeChargeStrength();
+      throwBottle();
+    }
+
+    function cancelCharge(event) {
+      if (phase !== "charging") return;
+      if (event?.cancelable) event.preventDefault();
+      stopChargeSound();
+      charge = 0;
+      chargeStartTime = 0;
+      phase = "ready";
+    }
+
+    canvas.addEventListener("mousedown", beginCharge);
+    window.addEventListener("mouseup", endCharge);
+    canvas.addEventListener("touchstart", beginCharge, { passive: false });
+    window.addEventListener("touchend", endCharge, { passive: false });
+    window.addEventListener("touchcancel", cancelCharge, { passive: false });
+    window.addEventListener("blur", cancelCharge);
+    canvas.addEventListener("touchmove", (event) => {
+      if (event.cancelable) event.preventDefault();
+    }, { passive: false });
+    canvas.addEventListener("dblclick", (event) => event.preventDefault());
+    canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+    document.addEventListener("gesturestart", (event) => event.preventDefault());
+    document.addEventListener("gesturechange", (event) => event.preventDefault());
+
+    resetBottle();
+
+    function frame(time) {
+      const realDeltaTime = Math.min((time - lastTime) / 1000 || 0, 0.05);
+      lastTime = time;
+      pickupMessageRemaining = Math.max(0, pickupMessageRemaining - realDeltaTime);
+      goldenFlashRemaining = Math.max(0, goldenFlashRemaining - realDeltaTime);
+      screenShakeRemaining = Math.max(0, screenShakeRemaining - realDeltaTime);
+      lightningRemaining = Math.max(0, lightningRemaining - realDeltaTime);
+      if (gameStarted) {
+        update(realDeltaTime);
+      }
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    Promise.all([
+      ...LEVELS.map((_, index) =>
+        loadImageWithTransparentWhite(`bottle_${index + 1}.png`)),
+      loadImageWithTransparentWhite("hand.png")
+    ]).then((loadedImages) => {
+      bottleImages = loadedImages.slice(0, LEVELS.length);
+      currentBottleImage = bottleImages[levelIndex] || null;
+      handImage = loadedImages[LEVELS.length];
+      imagesReady = true;
+      requestAnimationFrame(frame);
+    });
+  </script>
+</body>
+</html>
